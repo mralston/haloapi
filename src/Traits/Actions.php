@@ -1,6 +1,6 @@
 <?php
 
-namespace Derricksmith\Haloapi\Traits;
+namespace DerrickSmith\HaloApi\Traits;
 
 use Exception;
 
