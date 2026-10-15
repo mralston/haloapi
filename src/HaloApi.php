@@ -2,7 +2,7 @@
 
 namespace DerrickSmith\HaloApi;
 
-use Derricksmith\Haloapi\Traits\Actions;
+use DerrickSmith\HaloApi\Traits\Actions;
 use DerrickSmith\HaloApi\Traits\Agents;
 use DerrickSmith\HaloApi\Traits\Appointments;
 use DerrickSmith\HaloApi\Traits\Assets;
@@ -85,6 +85,13 @@ class HaloApi
 
     private $verifypeer;
 
+    /**
+     * Seconds a request may take in total, and seconds allowed for connecting.
+     */
+    private int $timeout = 30;
+
+    private int $connect_timeout = 10;
+
     private $token_type;
 
     private $expires_in;
@@ -94,6 +101,11 @@ class HaloApi
     private $refresh_token;
 
     public $last_result;
+
+    /**
+     * The HTTP status of the last response.
+     */
+    public ?int $last_status = null;
 
     public bool $return_object = false;
 
@@ -111,7 +123,7 @@ class HaloApi
 
         if (!empty($params)) {
             foreach ($params[0] as $key => $property) {
-                if (property_exists($this, $key)) {
+                if (property_exists($this, $key) && $property !== null) {
                     $this->{$key} = $property;
                 }
             }
@@ -182,6 +194,8 @@ class HaloApi
         curl_setopt($curl, CURLOPT_URL, $endpoint);
         curl_setopt($curl, CURLOPT_HEADER, true);
         curl_setopt($curl, CURLOPT_PORT, 443);
+        curl_setopt($curl, CURLOPT_TIMEOUT, (int) $this->timeout);
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, (int) $this->connect_timeout);
 
         if ($this->verifypeer === false || $this->verifypeer === 0) {
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
@@ -192,9 +206,18 @@ class HaloApi
         // Exec
         $response = curl_exec($curl);
 
+        if ($response === false) {
+            $error = curl_error($curl);
+            curl_close($curl);
+
+            throw new Exception("Halo request failed: {$error}");
+        }
+
         $info = curl_getinfo($curl);
 
         curl_close($curl);
+
+        $this->last_status = (int) $info['http_code'];
 
         // Data
         $header = trim(substr($response, 0, $info['header_size']));

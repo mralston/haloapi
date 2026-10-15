@@ -141,6 +141,16 @@ HALO_CLIENT_SECRET=
 HALO_HOST=https://your-subdomain.haloitsm.com
 ```
 
+Requests time out after 30 seconds, or 10 seconds if Halo cannot be reached, and a request
+that fails outright throws an exception. Both limits can be changed:
+
+```dotenv
+HALO_TIMEOUT=30
+HALO_CONNECT_TIMEOUT=10
+```
+
+After each call, `$halo->last_status` holds the HTTP status of the response.
+
 Optionally, you can publish the config file:
 
 ```bash

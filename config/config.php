@@ -18,6 +18,8 @@ return [
     'scope' => env('HALO_SCOPE', 'all'),
     'host' => env('HALO_HOST'),
     'verifypeer' => env('HALO_VERIFY_PEER', true),
+    'timeout' => (int) env('HALO_TIMEOUT', 30),
+    'connect_timeout' => (int) env('HALO_CONNECT_TIMEOUT', 10),
     'return_object' => true,
 
 ];
